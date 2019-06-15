@@ -1,0 +1,92 @@
+service: kmeets # NOTE: update this with your service name
+
+plugins:
+  - serverless-hooks-plugin
+
+custom:
+  hooks:
+    after:aws:deploy:finalize:cleanup:
+      - ./gen_config.sh
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  websocketsApiName: ${self:service}-${self:provider.stage}
+  websocketsApiRouteSelectionExpression: $request.body.action
+
+  stage: dev
+  region: ap-northeast-1
+
+  environment:
+    TABLE_SESSIONS: ${self:service}-${self:provider.stage}-sessions
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-${self:provider.stage}-*"
+#   - Effect: Allow
+#     Action:
+#       - execute-api:Invoke
+#     Resource:
+#       - { "Fn::Join" : ["", ["arn:aws:execute-api:",{"Ref":"AWS::Region"},":",{"Ref":"AWS::AccountId"},":*"]] }
+#   - Effect: Allow
+#     Action:
+#       - lambda:InvokeFunction
+#       - lambda:InvokeAsync
+#     Resource:
+#       - { "Fn::Join" : ["",["arn:aws:lambda:",{"Ref":"AWS::Region"},":",{"Ref":"AWS::AccountId"},":*"]] }
+#   - Effect: "Allow"
+#     Action:
+#       - "s3:ListBucket"
+#     Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+#   - Effect: "Allow"
+#     Action:
+#       - "s3:PutObject"
+#     Resource:
+#       Fn::Join:
+#         - ""
+#         - - "arn:aws:s3:::"
+#           - "Ref" : "ServerlessDeploymentBucket"
+#           - "/*"
+
+
+functions:
+  connect:
+    handler: handler.connect
+    events:
+      - websocket:
+          route: $connect
+  disconnect:
+    handler: handler.disconnect
+    events:
+      - websocket:
+          route: $disconnect
+  message:
+    handler: handler.message
+    events:
+      - websocket:
+          route: $default
+
+resources:
+  Resources:
+    sessionTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:provider.environment.TABLE_SESSIONS}
+        AttributeDefinitions:
+          -
+            AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
