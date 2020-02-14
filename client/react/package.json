@@ -1,0 +1,40 @@
+{
+  "name": "kmeets-clinet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel --no-cache src/html/index.html",
+    "eslint": "./node_modules/.bin/eslint src/js/**/*.jsx src/js/**/*.js",
+    "build": "parcel build --no-source-maps src/html/index.html",
+    "deploy-devlop": "npm run build && AWS_PROFILE=karuru scotty --website --source ./dist --region ap-northeast-1 --bucket kmeets.karuru.net --update --empty"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0",
+    "eslint-plugin-react": "^7.12.4",
+    "parcel-bundler": "^1.12.3",
+    "scottyjs": "^1.10.2"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.1.0",
+    "@material-ui/icons": "^4.0.0",
+    "@material-ui/pickers": "^3.0.0",
+    "axios": "^0.19.0",
+    "babel-polyfill": "^6.26.0",
+    "connected-react-router": "^6.4.0",
+    "moment": "^2.24.0",
+    "moment-duration-format": "^2.3.2",
+    "prop-types": "^15.7.2",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-helmet": "^5.2.1",
+    "react-redux": "^6.0.0",
+    "react-router-dom": "^5.0.0",
+    "redux": "^4.0.1",
+    "redux-actions": "^2.6.5",
+    "redux-saga": "^1.0.2"
+  }
+}
